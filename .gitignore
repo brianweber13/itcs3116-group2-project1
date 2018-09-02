@@ -5,3 +5,6 @@
 
 # vim
 *.swp
+
+# bytecode
+bin/
