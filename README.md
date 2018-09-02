@@ -1,4 +1,20 @@
 # ITCS 3166 Group 2 Project 1
+## Getting Started With Development
+ 1. We encourage using eclipse. If you'd like to use another IDE, continue to
+    [basic info](##basic-info) and make sure that you can get everything we use
+    working with your IDE.
+ 1. [Download eclipse](https://www.eclipse.org/downloads/) and install it with
+    support for Java.
+ 1. Clone this repository. If you don't know how to clone a repository, go to
+    the ["how to use git"](##how-to-use-git) section.
+ 1. Open the folder you just cloned in eclipse by using `File -> Open Projects
+    From Filesystem` in eclipse.
+ 1. Make a new branch
+ 1. Code away!
+ 1. Submit a merge request when you have completed a feature on your branch and
+    would like it merged into master. Assign someone else in the team to review
+    the changes.
+
 ## Basic Info
  * We use [Maven](https://maven.apache.org/what-is-maven.html) for dependency
    management.
