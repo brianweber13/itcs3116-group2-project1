@@ -11,10 +11,6 @@
     From Filesystem` in eclipse.
  1. Make a new branch
  1. Code away!
- 1. Don't forget to write tests: we use the [JUnit test
-    framework](https://junit.org/junit5/docs/current/user-guide/). I recommend
-    installing infinitest into eclipse, which will automatically run JUnit
-    tests whenever you save.
  1. Submit a merge request when you have completed a feature on your branch and
     would like it merged into master. Assign someone else in the team to review
     the changes.
