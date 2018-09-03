@@ -3,6 +3,14 @@
  */
 package edu.uncc.itcs3166.sliding_window;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /**
  * Framework provides functions to interface with a mock network layer and
  * physical layer in order to focus on implementing the protocols of the data
@@ -16,7 +24,12 @@ public class Framework {
     }
 
     final static int MAX_PKT = 1024;
+    final static String PHYSICAL_LAYER_FILE = "physical-layer";
     final int MAX_SEQUENCE_NUMBER;
+
+    private ObjectOutputStream writer;
+    private ObjectInputStream reader;
+    private long fileLastModifiedTime;
 
     /**
      * @param mAX_SEQUENCE_NUMBER
@@ -24,11 +37,42 @@ public class Framework {
     public Framework(int mAX_SEQUENCE_NUMBER) {
         super();
         MAX_SEQUENCE_NUMBER = mAX_SEQUENCE_NUMBER;
+        init();
     }
 
     public Framework() {
         super();
         MAX_SEQUENCE_NUMBER = 1;
+        init();
+    }
+
+    void init() {
+        try {
+            File physicalLayer = new File(PHYSICAL_LAYER_FILE);
+            // if file already exists will do nothing
+            physicalLayer.createNewFile();
+        } catch (IOException e) {
+            System.out.println(
+                    "Cannot create file for physical layer. Do you have "
+                            + "write permissions on the directory "
+                            + System.getProperty("user.dir") + "?");
+            e.printStackTrace();
+        }
+        fileLastModifiedTime = new File(PHYSICAL_LAYER_FILE).lastModified();
+
+        // create reader
+        // try {
+        // reader = new ObjectInputStream(new
+        // FileInputStream(NETWORK_LAYER_FILE));
+        // } catch (FileNotFoundException ex) {
+        // System.out.println("Unable to open file '" + NETWORK_LAYER_FILE +
+        // "'");
+        // } catch (IOException ex) {
+        // System.out.println("Error reading file '" + NETWORK_LAYER_FILE +
+        // "'");
+        // // Or we could just do this:
+        // // ex.printStackTrace();
+        // }
     }
 
     // ALL FUNCTIONS JUST RETURN JUNK DATA FOR NOW
@@ -49,12 +93,44 @@ public class Framework {
 
     // Go get an inbound frame from the physical layer and copy it to r.
     Frame fromPhysicalLayer() {
-        return new Frame();
+        Frame frameFromPhysicalLayer = new Frame();
+        try {
+            reader = new ObjectInputStream(
+                    new FileInputStream(PHYSICAL_LAYER_FILE));
+            frameFromPhysicalLayer = (Frame) reader.readObject();
+            reader.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("Unable to open file '"
+                    + System.getProperty("user.dir")
+                    + System.getProperty("path.separator") + PHYSICAL_LAYER_FILE
+                    + "' for reading. File Not Found.");
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            System.out.println(
+                    "Error reading file '" + PHYSICAL_LAYER_FILE + "'");
+            ex.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.out.println("ClassNotFoundException...");
+            e.printStackTrace();
+        }
+        return frameFromPhysicalLayer;
     }
 
     // PassTheFrame to the physical layer for transmission{
     void toPhysicalLayer(Frame frameToSend) {
-
+        try {
+            writer = new ObjectOutputStream(
+                    new FileOutputStream(PHYSICAL_LAYER_FILE));
+            writer.writeObject(frameToSend);
+            writer.close();
+        } catch (IOException ex) {
+            System.out.println("Unable to open file '"
+                    + System.getProperty("user.dir")
+                    + System.getProperty("file.separator") + PHYSICAL_LAYER_FILE
+                    + "' For writing. Do you have"
+                    + " write permissions on this directory? Does this file exist?");
+            ex.printStackTrace();
+        }
     }
 
     // Start the clock running and enable the timeout event.
@@ -95,4 +171,5 @@ public class Framework {
             i = 0;
         return i;
     }
+
 }
