@@ -38,7 +38,6 @@ public class Framework {
 
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
-    private long fileLastModifiedTime;
     private String fileChecksum;
 
     /**
@@ -74,21 +73,6 @@ public class Framework {
             e.printStackTrace();
         }
         fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
-        fileLastModifiedTime = new File(PHYSICAL_LAYER_FILE).lastModified();
-
-        // create reader
-        // try {
-        // reader = new ObjectInputStream(new
-        // FileInputStream(NETWORK_LAYER_FILE));
-        // } catch (FileNotFoundException ex) {
-        // System.out.println("Unable to open file '" + NETWORK_LAYER_FILE +
-        // "'");
-        // } catch (IOException ex) {
-        // System.out.println("Error reading file '" + NETWORK_LAYER_FILE +
-        // "'");
-        // // Or we could just do this:
-        // // ex.printStackTrace();
-        // }
     }
 
     String generateChecksum(String pathToFile) {
@@ -113,11 +97,6 @@ public class Framework {
     // Wait for an event to happen; return its type in event.
     eventType waitForEvent() {
         long now = System.currentTimeMillis();
-        // System.out.println("begain waiting at " + now);
-        // System.out.println("stored time for last file modification: "
-        // + fileLastModifiedTime);
-        // System.out.println("actual last time file was modifeid: "
-        // + new File(PHYSICAL_LAYER_FILE).lastModified());
         while (true) {
             try {
                 Thread.sleep(201);
@@ -125,26 +104,13 @@ public class Framework {
                 System.out.println("Could not sleep thread...");
                 e.printStackTrace();
             }
-            // System.out.println("current time: " +
-            // System.currentTimeMillis());
-            // System.out.println("stored time for last file modification: "
-            // + fileLastModifiedTime);
-            // System.out.println("actual last time file was modifeid: "
-            // + new File(PHYSICAL_LAYER_FILE).lastModified());
-
-            // System.out.println(fileChecksum);
             // check if file has changed
             String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
             if (!newChecksum.equals(fileChecksum)) {
                 fileChecksum = newChecksum;
                 return eventType.FRAME_ARRIVAL;
             }
-            // long newLastModifiedTime = new File(PHYSICAL_LAYER_FILE)
-            // .lastModified();
-            // if (newLastModifiedTime > fileLastModifiedTime) {
-            // fileLastModifiedTime = newLastModifiedTime;
-            // return eventType.FRAME_ARRIVAL;
-            // }
+
             // TODO: Implement checksumerr here
             else if (System.currentTimeMillis() > (now + TIMEOUT_IN_MILLIS)) {
                 return eventType.TIMEOUT;
@@ -188,20 +154,13 @@ public class Framework {
         return frameFromPhysicalLayer;
     }
 
-    // PassTheFrame to the physical layer for transmission{
+    // Pass the frame to the physical layer for transmission{
     void toPhysicalLayer(Frame frameToSend) {
         try {
             writer = new ObjectOutputStream(
                     new FileOutputStream(PHYSICAL_LAYER_FILE));
             writer.writeObject(frameToSend);
-            // System.out.println(
-            // "sent to physical layer at " + System.currentTimeMillis());
-            // System.out.println("stored time for last file modification: "
-            // + fileLastModifiedTime);
-            // System.out.println("actual last time file was modifeid: "
-            // + new File(PHYSICAL_LAYER_FILE).lastModified());
             writer.close();
-            fileLastModifiedTime = new File(PHYSICAL_LAYER_FILE).lastModified();
             fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
         } catch (IOException ex) {
             System.out.println("Unable to open file '"
@@ -211,43 +170,6 @@ public class Framework {
                     + " write permissions on this directory? Does this file exist?");
             ex.printStackTrace();
         }
-    }
-
-    // Start the clock running and enable the timeout event.
-    // Do we need this?
-    void startTime(int k) {
-        // TODO: come up with better name than 'k'
-
-    }
-
-    // Stop the clock and disable the timeout event.
-    // Do we need this?
-    void stopTimer(int k) {
-
-    }
-
-    // Start an auxiliary timer and enable the ack timeout event.
-    // Do we need this?
-    void startAckTimer() {
-
-    }
-
-    // Stop the auxiliary timer and disable the ack timeout event.
-    // Do we need this?
-    void stopAckTimer() {
-
-    }
-
-    // Allow the network layer to cause a network layer ready event.
-    // Do we need this?
-    void enableNetworkLayer() {
-
-    }
-
-    // Forbid the network layer from causing a network layer ready event.
-    // Do we need this?
-    void disableNetworkLayer() {
-
     }
 
     int inc(int i, int max) {
