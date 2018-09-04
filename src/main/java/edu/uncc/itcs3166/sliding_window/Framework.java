@@ -17,7 +17,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
+
+import javax.xml.bind.DatatypeConverter;
 
 public class Framework {
     public enum eventType {
@@ -28,18 +34,22 @@ public class Framework {
     final static String PHYSICAL_LAYER_FILE = "physical-layer";
     final int MAX_SEQUENCE_NUMBER;
     final int TIMEOUT_IN_MILLIS;
+    final Scanner scanner;
 
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
     private long fileLastModifiedTime;
+    private String fileChecksum;
 
     /**
      * @param mAX_SEQUENCE_NUMBER
      */
-    public Framework(int mAX_SEQUENCE_NUMBER, int tIMEOUT_IN_MILLIS) {
+    public Framework(int mAX_SEQUENCE_NUMBER, int tIMEOUT_IN_MILLIS,
+            Scanner scanner) {
         super();
         MAX_SEQUENCE_NUMBER = mAX_SEQUENCE_NUMBER;
         TIMEOUT_IN_MILLIS = tIMEOUT_IN_MILLIS;
+        this.scanner = scanner;
         init();
     }
 
@@ -47,6 +57,7 @@ public class Framework {
         super();
         MAX_SEQUENCE_NUMBER = 1;
         TIMEOUT_IN_MILLIS = 5000;
+        scanner = new Scanner(System.in);
         init();
     }
 
@@ -62,6 +73,7 @@ public class Framework {
                             + System.getProperty("user.dir") + "?");
             e.printStackTrace();
         }
+        fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
         fileLastModifiedTime = new File(PHYSICAL_LAYER_FILE).lastModified();
 
         // create reader
@@ -79,9 +91,33 @@ public class Framework {
         // }
     }
 
+    String generateChecksum(String pathToFile) {
+        String algorithm = "MD5";
+        try {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            md.update(Files.readAllBytes(Paths.get(pathToFile)));
+            byte[] digest = md.digest();
+            String myChecksum = DatatypeConverter.printHexBinary(digest)
+                    .toUpperCase();
+            return myChecksum;
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Could not find algorithm " + algorithm);
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Error reading file " + pathToFile);
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     // Wait for an event to happen; return its type in event.
     eventType waitForEvent() {
         long now = System.currentTimeMillis();
+        System.out.println("begain waiting at " + now);
+        // System.out.println("stored time for last file modification: "
+        // + fileLastModifiedTime);
+        // System.out.println("actual last time file was modifeid: "
+        // + new File(PHYSICAL_LAYER_FILE).lastModified());
         while (true) {
             try {
                 Thread.sleep(201);
@@ -89,12 +125,27 @@ public class Framework {
                 System.out.println("Could not sleep thread...");
                 e.printStackTrace();
             }
+            // System.out.println("current time: " +
+            // System.currentTimeMillis());
+            // System.out.println("stored time for last file modification: "
+            // + fileLastModifiedTime);
+            // System.out.println("actual last time file was modifeid: "
+            // + new File(PHYSICAL_LAYER_FILE).lastModified());
 
-            if (new File(PHYSICAL_LAYER_FILE)
-                    .lastModified() > fileLastModifiedTime) {
-                // TODO: Implement checksumerr here
+            // System.out.println(fileChecksum);
+            // check if file has changed
+            // String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
+            // if (newChecksum != fileChecksum) {
+            // return eventType.FRAME_ARRIVAL;
+            // }
+            long newLastModifiedTime = new File(PHYSICAL_LAYER_FILE)
+                    .lastModified();
+            if (newLastModifiedTime > fileLastModifiedTime) {
+                fileLastModifiedTime = newLastModifiedTime;
                 return eventType.FRAME_ARRIVAL;
-            } else if (System.currentTimeMillis() > (now + TIMEOUT_IN_MILLIS)) {
+            }
+            // TODO: Implement checksumerr here
+            else if (System.currentTimeMillis() > (now + TIMEOUT_IN_MILLIS)) {
                 return eventType.TIMEOUT;
             }
         }
@@ -102,10 +153,8 @@ public class Framework {
 
     // Fetch a packet from the network layer for transmission on the channel.
     String fromNetworkLayer() {
-        Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the data to be sent: ");
         String data = scanner.nextLine();
-        scanner.close();
         return data;
     }
 
@@ -145,8 +194,15 @@ public class Framework {
             writer = new ObjectOutputStream(
                     new FileOutputStream(PHYSICAL_LAYER_FILE));
             writer.writeObject(frameToSend);
-            fileLastModifiedTime = new File(PHYSICAL_LAYER_FILE).lastModified();
+            // System.out.println(
+            // "sent to physical layer at " + System.currentTimeMillis());
+            // System.out.println("stored time for last file modification: "
+            // + fileLastModifiedTime);
+            // System.out.println("actual last time file was modifeid: "
+            // + new File(PHYSICAL_LAYER_FILE).lastModified());
             writer.close();
+            fileLastModifiedTime = new File(PHYSICAL_LAYER_FILE).lastModified();
+            fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
         } catch (IOException ex) {
             System.out.println("Unable to open file '"
                     + System.getProperty("user.dir")
