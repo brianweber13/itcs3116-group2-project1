@@ -46,12 +46,6 @@ public class SimplexStopAndWait {
             inboundFrame = receiver.fromPhysicalLayer();
             receiver.toNetworkLayer(inboundFrame.getPacket());
             System.out.println("Sending acknowledgment...");
-            // try {
-            // Thread.sleep(100);
-            // } catch (InterruptedException e) {
-            // System.out.println("sleep interrupted");
-            // e.printStackTrace();
-            // }
             receiver.toPhysicalLayer(outboundFrame);
             System.out.println();
         }
