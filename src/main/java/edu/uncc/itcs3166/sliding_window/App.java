@@ -36,11 +36,26 @@ public class App {
             String input = scanner.nextLine();
             switch (Character.toLowerCase(input.charAt(0))) {
             case 's':
-                SimplexStopAndWait.Sender(scanner);
+                SimplexStopAndWait.Sender(scanner, askIfVerboseMode());
             case 'r':
-                SimplexStopAndWait.Receiver(scanner);
+                SimplexStopAndWait.Receiver(scanner, askIfVerboseMode());
             default:
                 System.out.println("Please enter 's' or 'r'");
+            }
+        }
+    }
+
+    private static boolean askIfVerboseMode() {
+        while (true) {
+            System.out.println("would you like to enable verbose mode? (y/n)");
+            String input = scanner.nextLine();
+            switch (Character.toLowerCase(input.charAt(0))) {
+            case 'y':
+                return true;
+            case 'n':
+                return false;
+            default:
+                System.out.println("Please enter 'y' or 'n'");
             }
         }
     }
