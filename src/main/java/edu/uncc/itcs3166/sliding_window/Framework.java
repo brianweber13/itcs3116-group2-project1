@@ -113,7 +113,7 @@ public class Framework {
     // Wait for an event to happen; return its type in event.
     eventType waitForEvent() {
         long now = System.currentTimeMillis();
-        System.out.println("begain waiting at " + now);
+        // System.out.println("begain waiting at " + now);
         // System.out.println("stored time for last file modification: "
         // + fileLastModifiedTime);
         // System.out.println("actual last time file was modifeid: "
@@ -134,16 +134,17 @@ public class Framework {
 
             // System.out.println(fileChecksum);
             // check if file has changed
-            // String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
-            // if (newChecksum != fileChecksum) {
-            // return eventType.FRAME_ARRIVAL;
-            // }
-            long newLastModifiedTime = new File(PHYSICAL_LAYER_FILE)
-                    .lastModified();
-            if (newLastModifiedTime > fileLastModifiedTime) {
-                fileLastModifiedTime = newLastModifiedTime;
+            String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
+            if (!newChecksum.equals(fileChecksum)) {
+                fileChecksum = newChecksum;
                 return eventType.FRAME_ARRIVAL;
             }
+            // long newLastModifiedTime = new File(PHYSICAL_LAYER_FILE)
+            // .lastModified();
+            // if (newLastModifiedTime > fileLastModifiedTime) {
+            // fileLastModifiedTime = newLastModifiedTime;
+            // return eventType.FRAME_ARRIVAL;
+            // }
             // TODO: Implement checksumerr here
             else if (System.currentTimeMillis() > (now + TIMEOUT_IN_MILLIS)) {
                 return eventType.TIMEOUT;
@@ -153,8 +154,10 @@ public class Framework {
 
     // Fetch a packet from the network layer for transmission on the channel.
     String fromNetworkLayer() {
+        System.out.println("In our case, packets are represented by words "
+                + "separated by whitespace.");
         System.out.print("Enter the data to be sent: ");
-        String data = scanner.nextLine();
+        String data = scanner.next();
         return data;
     }
 
