@@ -154,9 +154,6 @@ public class Framework {
 
     // Fetch a packet from the network layer for transmission on the channel.
     String fromNetworkLayer() {
-        System.out.println("In our case, packets are represented by words "
-                + "separated by whitespace.");
-        System.out.print("Enter the data to be sent: ");
         String data = scanner.next();
         return data;
     }
