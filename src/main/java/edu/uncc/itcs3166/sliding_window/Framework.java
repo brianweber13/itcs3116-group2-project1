@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.xml.bind.DatatypeConverter;
@@ -44,6 +46,8 @@ public class Framework {
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
     private String fileChecksum;
+    private Map<Integer, Long> runningTimers = new HashMap<Integer, Long>();
+    private boolean networkLayerEnabled = true;
 
     /**
      * @param mAX_SEQUENCE_NUMBER
@@ -124,7 +128,6 @@ public class Framework {
      * @return the type of event
      */
     eventType waitForEvent() {
-        long now = System.currentTimeMillis();
         while (true) {
             try {
                 Thread.sleep(201);
@@ -137,16 +140,17 @@ public class Framework {
             if (!newChecksum.equals(fileChecksum)) {
                 fileChecksum = newChecksum;
                 return eventType.FRAME_ARRIVAL;
-            }
-
-            // TODO: Implement checksumerr here
-            else if (System.currentTimeMillis() > (now + TIMEOUT_IN_MILLIS)) {
-                return eventType.TIMEOUT;
-            }
+            } else if (runningTimers.size() > 0) {
+                for (Map.Entry<Integer, Long> pair : runningTimers.entrySet()) {
+                    if (System.currentTimeMillis() > (pair.getValue()
+                            + TIMEOUT_IN_MILLIS)) {
+                        return eventType.TIMEOUT;
+                    }
+                }
+            } // TODO: Implement checksumerr here
         }
     }
 
-    // Fetch a packet from the network layer for transmission on the channel.
     /**
      * gets a packet from the network layer (uses scanner.next() in order to get
      * the next word input on the command line). If there are no words
@@ -221,11 +225,19 @@ public class Framework {
         }
     }
 
+    void startTimer(int sequenceNumber) {
+        runningTimers.put(sequenceNumber, System.currentTimeMillis());
+    }
+
+    void stopTimer(int sequenceNumber) {
+        runningTimers.remove(sequenceNumber);
+    }
+
     /**
      * increments a number, but if you exceed the max value, then it will reset
      * the number to zero. This is used to keep track of which packet in the
      * window you're sending or receiving. Ideally, max should be set as a final
-     * int in your implentation and then passed to every inc call.
+     * int in your implementation and then passed to every inc call.
      * 
      * typical usage is below:
      * 
