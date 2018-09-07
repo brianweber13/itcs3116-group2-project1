@@ -35,7 +35,7 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class Framework {
     public enum eventType {
-        FRAME_ARRIVAL, CHECKSUM_ERR, TIMEOUT
+        FRAME_ARRIVAL, CHECKSUM_ERR, TIMEOUT, NETWORK_LAYER_READY
     }
 
     final static int MAX_PKT = 1024;
@@ -47,6 +47,7 @@ public class Framework {
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
     private String fileChecksum;
+    private boolean networkLayerEnabled;
     private Map<Integer, Long> runningTimers = new HashMap<Integer, Long>();
 
     /**
@@ -147,7 +148,10 @@ public class Framework {
                         return eventType.TIMEOUT;
                     }
                 }
-            } // TODO: Implement checksumerr here
+            } else if (networkLayerEnabled) {
+                return eventType.NETWORK_LAYER_READY;
+            }
+            // TODO: Implement checksumerr here
         }
     }
 
@@ -243,6 +247,14 @@ public class Framework {
 
     void stopTimer(int sequenceNumber) {
         runningTimers.remove(sequenceNumber);
+    }
+
+    void enableNetworkLayer() {
+        networkLayerEnabled = true;
+    }
+
+    void disableNetworkLayer() {
+        networkLayerEnabled = false;
     }
 
     /**
