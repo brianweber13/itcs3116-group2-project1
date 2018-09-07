@@ -47,7 +47,6 @@ public class Framework {
     private ObjectInputStream reader;
     private String fileChecksum;
     private Map<Integer, Long> runningTimers = new HashMap<Integer, Long>();
-    private boolean networkLayerEnabled = true;
 
     /**
      * @param mAX_SEQUENCE_NUMBER
