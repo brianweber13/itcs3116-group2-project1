@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 
 import javax.xml.bind.DatatypeConverter;
@@ -224,6 +225,18 @@ public class Framework {
         }
     }
 
+    void toPhysicalLayer(Frame frameToSend, boolean failMode) {
+        if (failMode) {
+            Random rand = new Random();
+            int succeed = rand.nextInt(3);
+            if (succeed != 0) {
+                toPhysicalLayer(frameToSend);
+            }
+        } else {
+            toPhysicalLayer(frameToSend);
+        }
+    }
+
     void startTimer(int sequenceNumber) {
         runningTimers.put(sequenceNumber, System.currentTimeMillis());
     }
@@ -256,4 +269,13 @@ public class Framework {
         return i;
     }
 
+    boolean between(int a, int b, int c) {
+        // return true if a<=b<c circularly, false otherwise
+        if (((a <= b) && (b < c)) || ((c < a) && (a <= b))
+                || ((b < c) && (c < a))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
