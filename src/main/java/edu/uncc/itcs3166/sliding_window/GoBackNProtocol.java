@@ -16,9 +16,9 @@ public class GoBackNProtocol {
         this.failSomePackets = failSomePackets;
     }
 
-    public void sendData(int frameNum, int frameExp, String[] packet) {
+    public void sendData(int frameNum, int frameExp, String[] packets) {
         Frame frameToSend = new Frame();
-        frameToSend.setPacket(packet[frameNum]);
+        frameToSend.setPacket(packets[frameNum]);
         frameToSend.setSequenceNumber(frameNum);
         frameToSend
                 .setAcknowledgmentNumber((frameExp + MAX_SEQ) % (MAX_SEQ + 1));
@@ -65,6 +65,8 @@ public class GoBackNProtocol {
                     sendData(nextFrameToSend, frameExpected, packet);
                     frameWork.inc(nextFrameToSend, MAX_SEQ);
                 }
+            default:
+                break;
             }
             packet[nextFrameToSend] = frameWork.fromNetworkLayer();
             nBuffered = nBuffered + 1;
