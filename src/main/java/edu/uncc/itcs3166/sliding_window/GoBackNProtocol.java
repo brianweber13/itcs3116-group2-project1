@@ -76,6 +76,12 @@ public class GoBackNProtocol {
             }
 
         }
+        if (nBuffered < MAX_SEQ)
+        {
+           enableNetworkLayer();
+        else
+           disableNetworkLayer();
+        }
     }
 
 }
