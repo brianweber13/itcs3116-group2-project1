@@ -1,13 +1,3 @@
-/**
- * Framework simulates the physical and network layers and can be replaced in
- * order to interface with an actual physical/network layer. We make a few
- * assumptions:
- *   - the network layer does not need to be enabled/disabled because we only
- *     accept input when it is directly asked for (see the fromNetwork function)
- * This allows us to focus on implementing the data link layer protocols
- * discussed in chapter 3
- * @author Brian Weber
- */
 package edu.uncc.itcs3166.sliding_window;
 
 import java.io.File;
@@ -25,6 +15,21 @@ import java.util.Scanner;
 
 import javax.xml.bind.DatatypeConverter;
 
+/**
+ * Framework simulates the physical and network layers and can be replaced in
+ * order to interface with an actual physical/network layer. We make a few
+ * assumptions: - the network layer does not need to be enabled/disabled because
+ * we only accept input when it is directly asked for (see the fromNetwork
+ * function) This allows us to focus on implementing the data link layer
+ * protocols discussed in chapter 3
+ * 
+ * This mockup of the network and physical layers uses command line input/output
+ * as the network layer and a file on the disk as the physical layer. We assume
+ * that all instances that want to communicate operate in the same directory.
+ * Only two instances can communicate at a time.
+ * 
+ * @author Brian Weber
+ */
 public class Framework {
     public enum eventType {
         FRAME_ARRIVAL, CHECKSUM_ERR, TIMEOUT
@@ -42,6 +47,15 @@ public class Framework {
 
     /**
      * @param mAX_SEQUENCE_NUMBER
+     *            the max number of frames the protocol can send in one go. In
+     *            other words, the size of the window
+     * @param tIMEOUT_IN_MILLIS
+     *            the time to wait before timing out
+     * @param scanner
+     *            an input scanner, created by App.java and passed to the
+     *            framework via the protocol. Typically this is constructed with
+     *            `new Scanner(System.in)`. See SimplexStopAndWait, App for an
+     *            example implementation
      */
     public Framework(int mAX_SEQUENCE_NUMBER, int tIMEOUT_IN_MILLIS,
             Scanner scanner) {
@@ -60,6 +74,9 @@ public class Framework {
         init();
     }
 
+    /**
+     * does set up stuff needed in all constructors
+     */
     void init() {
         try {
             File physicalLayer = new File(PHYSICAL_LAYER_FILE);
@@ -75,6 +92,13 @@ public class Framework {
         fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
     }
 
+    /**
+     * generates a checksum for the given file in order to discover when the
+     * file has changed
+     * 
+     * @param pathToFile
+     * @return the generated checksum
+     */
     String generateChecksum(String pathToFile) {
         String algorithm = "MD5";
         try {
@@ -94,7 +118,11 @@ public class Framework {
         return "";
     }
 
-    // Wait for an event to happen; return its type in event.
+    /**
+     * Waits for an event to happen and returns the even type.
+     * 
+     * @return the type of event
+     */
     eventType waitForEvent() {
         long now = System.currentTimeMillis();
         while (true) {
@@ -119,17 +147,34 @@ public class Framework {
     }
 
     // Fetch a packet from the network layer for transmission on the channel.
+    /**
+     * gets a packet from the network layer (uses scanner.next() in order to get
+     * the next word input on the command line). If there are no words
+     * remaining, will prompt the user for more
+     * 
+     * @return the next 'packet' (word) to send
+     */
     String fromNetworkLayer() {
         String data = scanner.next();
         return data;
     }
 
-    // Deliver information from an inbound frame to the network layer.
+    /**
+     * sends the frame to the 'network layer' (command line) uses
+     * System.out.println()
+     * 
+     * @param packet
+     *            the 'packet' (string) to send
+     */
     void toNetworkLayer(String packet) {
         System.out.println(packet);
     }
 
-    // Go get an inbound frame from the physical layer and copy it to r.
+    /**
+     * gets a frame from the "physical layer" (the file on disk)
+     * 
+     * @return the received frame
+     */
     Frame fromPhysicalLayer() {
         Frame frameFromPhysicalLayer = new Frame();
         try {
@@ -154,7 +199,11 @@ public class Framework {
         return frameFromPhysicalLayer;
     }
 
-    // Pass the frame to the physical layer for transmission{
+    /**
+     * sends the frame to the 'physical layer' (the file on disk)
+     * 
+     * @param frameToSend
+     */
     void toPhysicalLayer(Frame frameToSend) {
         try {
             writer = new ObjectOutputStream(
@@ -172,6 +221,22 @@ public class Framework {
         }
     }
 
+    /**
+     * increments a number, but if you exceed the max value, then it will reset
+     * the number to zero. This is used to keep track of which packet in the
+     * window you're sending or receiving. Ideally, max should be set as a final
+     * int in your implentation and then passed to every inc call.
+     * 
+     * typical usage is below:
+     * 
+     * `frameExpected = inc(frameExpected, * MAX_SEQUENCE_NUMBER)`
+     * 
+     * @param i
+     *            number to increment
+     * @param max
+     *            MAX_SEQUENCE_NUMBER
+     * @return the incremented number
+     */
     int inc(int i, int max) {
         if (i < max)
             i++;
