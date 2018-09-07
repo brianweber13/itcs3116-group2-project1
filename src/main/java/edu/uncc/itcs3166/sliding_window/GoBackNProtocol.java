@@ -25,7 +25,7 @@ public class GoBackNProtocol {
         frameWork.startTimer(frameNum);
     }
 
-    public  void protcol5() {
+    public  void protocol5() {
         int nextFrameToSend;
         int ackExpected;
         int frameExpected;
