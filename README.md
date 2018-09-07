@@ -1,13 +1,33 @@
 # ITCS 3166 Group 2 Project 1
-You made it! If you're reading this, you've either made it to the github page
-or successfully cloned this repository and have a local copy. If you haven't
-figured out what it means to "clone" a repository, you should do that now. If
-you're looking for more information, [github has very useful documentation
-that is focused on the command-line tool for
-git](https://guides.github.com/introduction/git-handbook/). If you
-prefer to use a GUI, I recommend [gitkraken](https://www.gitkraken.com/). If
-you use gitkraken, start by reading [this
-page](https://support.gitkraken.com/start-here/guide). It's an absolute
+## Getting Started With Development
+ 1. We encourage using eclipse. If you'd like to use another IDE, continue to
+    [basic info](##basic-info) and make sure that you can get everything we use
+    working with your IDE.
+ 1. [Download eclipse](https://www.eclipse.org/downloads/) and install it with
+    support for Java.
+ 1. Clone this repository. If you don't know how to clone a repository, go to
+    the ["how to use git"](##how-to-use-git) section.
+ 1. Open the folder you just cloned in eclipse by using `File -> Open Projects
+    From Filesystem` in eclipse.
+ 1. Make a new branch
+ 1. Code away!
+ 1. Submit a merge request when you have completed a feature on your branch and
+    would like it merged into master. Assign someone else in the team to review
+    the changes.
+
+## Basic Info
+ * We use [Maven](https://maven.apache.org/what-is-maven.html) for dependency
+   management.
+ * We use [JUnit](https://junit.org/junit5/) for testing.
+ * We encourage using [Eclipse](https://www.eclipse.org) for an IDE, but you
+   are welcome to use whatever you're comfortable with.
+
+## How to use Git
+[Github has very useful documentation that is focused on the command-line tool
+for git](https://guides.github.com/introduction/git-handbook/). If you prefer
+to use a GUI, still read the github page, but you can use
+[gitkraken](https://www.gitkraken.com/). If you use gitkraken, start by reading
+[this page](https://support.gitkraken.com/start-here/guide). It's an absolute
 TREASURE TROVE of good information for beginners. When you've got a better
 understanding of the basic git concepts, [this short
 video](https://www.youtube.com/watch?v=Lb4yvfrX_7I&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU)
@@ -53,3 +73,4 @@ question.
 mars , M&M's , etc.) , cookies , cupcakes ,
 doughnuts ) for the audience. Each group will give
 you a score from 0 to 10 for your Presentation.
+Cam

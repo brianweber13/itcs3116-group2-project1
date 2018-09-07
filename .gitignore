@@ -2,4 +2,8 @@
 *.swp
 
 # bytecode
-bin/
+target/
+App.jar
+
+# files for mock layers
+physical-layer
