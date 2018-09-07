@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class App {
     static Scanner scanner = new Scanner(System.in);
     public static final String[] protocolList = new String[] {
-            "Simplex stop-and-wait (s)" };
+            "Simplex stop-and-wait (s)", "Go back N (n)" };
 
     public static void main(String[] args) {
         while (true) {
@@ -21,6 +21,8 @@ public class App {
             switch (Character.toLowerCase(input.charAt(0))) {
             case 's':
                 demoSimplexStopAndWait();
+            case 'n':
+                demoGoBackN();
             default:
                 System.out
                         .println("Protocol not recognized. Enter the letter in "
@@ -41,6 +43,23 @@ public class App {
                 SimplexStopAndWait.Receiver(scanner, askIfVerboseMode());
             default:
                 System.out.println("Please enter 's' or 'r'");
+            }
+        }
+    }
+
+    private static void demoGoBackN() {
+        while (true) {
+            System.out.println("Would you like some packets to fail? (y/n)");
+            String input = scanner.nextLine();
+            switch (Character.toLowerCase(input.charAt(0))) {
+            case 'y':
+                GoBackNProtocol p = new GoBackNProtocol(scanner, true);
+                p.protocol5();
+            case 'n':
+                GoBackNProtocol p2 = new GoBackNProtocol(scanner, false);
+                p2.protocol5();
+            default:
+                System.out.println("Please enter 'y' or 'n'");
             }
         }
     }
