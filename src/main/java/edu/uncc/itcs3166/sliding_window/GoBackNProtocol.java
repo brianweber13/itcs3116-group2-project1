@@ -45,6 +45,12 @@ public class GoBackNProtocol {
         while (true) {
             event = frameWork.waitForEvent();
             switch (event) {
+            case NETWORK_LAYER_READY:
+                packet[nextFrameToSend] = frameWork.fromNetworkLayer();
+                nBuffered = nBuffered + 1;
+                sendData(nextFrameToSend, frameExpected, packet);
+                frameWork.inc(nextFrameToSend, MAX_SEQ);
+
             case FRAME_ARRIVAL:
                 r = frameWork.fromPhysicalLayer();
                 if (r.getSequenceNumber() == frameExpected) {
@@ -68,10 +74,6 @@ public class GoBackNProtocol {
             default:
                 break;
             }
-            packet[nextFrameToSend] = frameWork.fromNetworkLayer();
-            nBuffered = nBuffered + 1;
-            sendData(nextFrameToSend, frameExpected, packet);
-            frameWork.inc(nextFrameToSend, MAX_SEQ);
 
         }
     }
