@@ -75,13 +75,13 @@ public class GoBackNProtocol {
                 break;
             }
 
+            if (nBuffered < MAX_SEQ) {
+                frameWork.enableNetworkLayer();
+            } else {
+                frameWork.disableNetworkLayer();
+            }
         }
-        if (nBuffered < MAX_SEQ)
-        {
-           enableNetworkLayer();
-        else
-           disableNetworkLayer();
-        }
+
     }
 
 }
