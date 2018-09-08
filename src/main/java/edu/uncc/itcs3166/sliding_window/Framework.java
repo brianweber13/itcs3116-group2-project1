@@ -47,7 +47,7 @@ public class Framework {
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
     private String fileChecksum;
-    private boolean networkLayerEnabled;
+    private boolean networkLayerEnabled = true;
     private Map<Integer, Long> runningTimers = new HashMap<Integer, Long>();
 
     /**
@@ -141,15 +141,17 @@ public class Framework {
             if (!newChecksum.equals(fileChecksum)) {
                 fileChecksum = newChecksum;
                 return eventType.FRAME_ARRIVAL;
-            } else if (runningTimers.size() > 0) {
+            }
+            if (networkLayerEnabled) {
+                return eventType.NETWORK_LAYER_READY;
+            }
+            if (runningTimers.size() > 0) {
                 for (Map.Entry<Integer, Long> pair : runningTimers.entrySet()) {
                     if (System.currentTimeMillis() > (pair.getValue()
                             + TIMEOUT_IN_MILLIS)) {
                         return eventType.TIMEOUT;
                     }
                 }
-            } else if (networkLayerEnabled) {
-                return eventType.NETWORK_LAYER_READY;
             }
             // TODO: Implement checksumerr here
         }
