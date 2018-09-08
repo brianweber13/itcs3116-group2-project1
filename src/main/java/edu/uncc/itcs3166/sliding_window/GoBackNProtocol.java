@@ -32,7 +32,7 @@ public class GoBackNProtocol {
         int ackExpected;
         int frameExpected;
         Frame r;
-        String[] packet = new String[MAX_SEQ + 1];
+        String[] packets = new String[MAX_SEQ + 1];
         int nBuffered;
         int i;
         eventType event;
@@ -46,9 +46,9 @@ public class GoBackNProtocol {
             event = frameWork.waitForEvent();
             switch (event) {
             case NETWORK_LAYER_READY:
-                packet[nextFrameToSend] = frameWork.fromNetworkLayer();
+                packets[nextFrameToSend] = frameWork.fromNetworkLayer();
                 nBuffered = nBuffered + 1;
-                sendData(nextFrameToSend, frameExpected, packet);
+                sendData(nextFrameToSend, frameExpected, packets);
                 frameWork.inc(nextFrameToSend, MAX_SEQ);
 
             case FRAME_ARRIVAL:
@@ -68,7 +68,7 @@ public class GoBackNProtocol {
             case TIMEOUT:
                 nextFrameToSend = ackExpected;
                 for (i = 1; i <= nBuffered; i++) {
-                    sendData(nextFrameToSend, frameExpected, packet);
+                    sendData(nextFrameToSend, frameExpected, packets);
                     frameWork.inc(nextFrameToSend, MAX_SEQ);
                 }
             default:
