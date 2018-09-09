@@ -17,6 +17,7 @@ public class GoBackNProtocol {
     }
 
     public void sendData(int frameNum, int frameExp, String[] packets) {
+        // System.out.println("sending: " + packets[frameNum]);
         Frame frameToSend = new Frame();
         frameToSend.setPacket(packets[frameNum]);
         frameToSend.setSequenceNumber(frameNum);
@@ -24,7 +25,6 @@ public class GoBackNProtocol {
                 .setAcknowledgmentNumber((frameExp + MAX_SEQ) % (MAX_SEQ + 1));
         frameWork.toPhysicalLayer(frameToSend, failSomePackets);
         frameWork.startTimer(frameNum);
-
     }
 
     public void protocol5() {
@@ -43,25 +43,29 @@ public class GoBackNProtocol {
         nBuffered = 0;
 
         while (true) {
+            // System.out.println("ack expected: " + ackExpected);
+            // System.out.println("next frame to send: " + nextFrameToSend);
             event = frameWork.waitForEvent();
+            // System.out.println(event);
             switch (event) {
             case NETWORK_LAYER_READY:
                 packets[nextFrameToSend] = frameWork.fromNetworkLayer();
                 nBuffered = nBuffered + 1;
                 sendData(nextFrameToSend, frameExpected, packets);
-                frameWork.inc(nextFrameToSend, MAX_SEQ);
+                nextFrameToSend = frameWork.inc(nextFrameToSend, MAX_SEQ);
+                break;
 
             case FRAME_ARRIVAL:
                 r = frameWork.fromPhysicalLayer();
                 if (r.getSequenceNumber() == frameExpected) {
                     frameWork.toNetworkLayer(r.getPacket());
-                    frameWork.inc(ackExpected, MAX_SEQ);
+                    ackExpected = frameWork.inc(ackExpected, MAX_SEQ);
                 }
                 while (frameWork.between(ackExpected,
                         r.getAcknowledgmentNumber(), nextFrameToSend)) {
                     nBuffered = nBuffered - 1;
                     frameWork.stopTimer(ackExpected);
-                    frameWork.inc(ackExpected, MAX_SEQ);
+                    ackExpected = frameWork.inc(ackExpected, MAX_SEQ);
                 }
                 break;
 
@@ -69,8 +73,9 @@ public class GoBackNProtocol {
                 nextFrameToSend = ackExpected;
                 for (i = 1; i <= nBuffered; i++) {
                     sendData(nextFrameToSend, frameExpected, packets);
-                    frameWork.inc(nextFrameToSend, MAX_SEQ);
+                    ackExpected = frameWork.inc(nextFrameToSend, MAX_SEQ);
                 }
+                break;
             default:
                 break;
             }
@@ -82,6 +87,10 @@ public class GoBackNProtocol {
             }
         }
 
+    }
+
+    public Framework getFrameWork() {
+        return frameWork;
     }
 
 }

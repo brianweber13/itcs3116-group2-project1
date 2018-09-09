@@ -13,11 +13,11 @@ public class FrameworkTests {
     Scanner scanner = new Scanner(System.in);
     Frame testFrame1 = new Frame(frameKind.DATA, 0, 0, "a whole bunch of data");
     Frame testFrame2 = new Frame(frameKind.DATA, 0, 0, "even more data!");
+    Framework testFramework1 = new Framework(0, 1000, scanner);
+    Framework testFramework2 = new Framework(0, 1000, scanner);
 
     @Test
     void sendAcrossPhysicalLayer() {
-        Framework testFramework1 = new Framework(0, 0, scanner);
-        Framework testFramework2 = new Framework(0, 0, scanner);
         testFramework1.toPhysicalLayer(testFrame1);
         Frame receivedFrame = testFramework2.fromPhysicalLayer();
         // System.out.println("Expected Frame:");
@@ -32,11 +32,10 @@ public class FrameworkTests {
 
     @Test
     void waitForFrame() {
-        Framework testFramework1 = new Framework(0, 1000, scanner);
-        testFramework1.toPhysicalLayer(testFrame1);
-        Framework testFramework2 = new Framework(0, 1000, scanner);
+        Frame waitForFrameTestFrame = new Frame(frameKind.DATA, 0, 0,
+                "only used in waitForFrame() test!");
         testFramework1.disableNetworkLayer();
-        testFramework2.toPhysicalLayer(testFrame2);
+        testFramework2.toPhysicalLayer(waitForFrameTestFrame);
         testFramework1.startTimer(0);
         eventType result = testFramework1.waitForEvent();
         assertEquals(eventType.FRAME_ARRIVAL, result);
@@ -44,24 +43,22 @@ public class FrameworkTests {
 
     @Test
     void waitForTimeout() {
-        Framework testTimeoutFramework = new Framework(0, 1000, scanner);
-        testTimeoutFramework.disableNetworkLayer();
-        testTimeoutFramework.startTimer(0);
-        eventType event = testTimeoutFramework.waitForEvent();
+        testFramework1.disableNetworkLayer();
+        testFramework1.startTimer(0);
+        eventType event = testFramework1.waitForEvent();
         assertEquals(eventType.TIMEOUT, event);
     }
 
     @Test
     void waitForNetworkLayerReady() {
-        Framework testNetworkLayerReadyEvent = new Framework(0, 1000, scanner);
-        eventType event = testNetworkLayerReadyEvent.waitForEvent();
+        eventType event = testFramework1.waitForEvent();
         assertEquals(eventType.NETWORK_LAYER_READY, event);
-        testNetworkLayerReadyEvent.disableNetworkLayer();
-        testNetworkLayerReadyEvent.startTimer(0);
-        event = testNetworkLayerReadyEvent.waitForEvent();
+        testFramework1.disableNetworkLayer();
+        testFramework1.startTimer(0);
+        event = testFramework1.waitForEvent();
         assertEquals(eventType.TIMEOUT, event);
-        testNetworkLayerReadyEvent.enableNetworkLayer();
-        event = testNetworkLayerReadyEvent.waitForEvent();
+        testFramework1.enableNetworkLayer();
+        event = testFramework1.waitForEvent();
         assertEquals(eventType.NETWORK_LAYER_READY, event);
     }
 }
