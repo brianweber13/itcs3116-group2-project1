@@ -17,7 +17,7 @@ public class GoBackNProtocol {
     }
 
     public void sendData(int frameNum, int frameExp, String[] packets) {
-        // System.out.println("sending: " + packets[frameNum]);
+        System.out.println("sending: " + packets[frameNum]);
         Frame frameToSend = new Frame();
         frameToSend.setPacket(packets[frameNum]);
         frameToSend.setSequenceNumber(frameNum);
@@ -43,10 +43,10 @@ public class GoBackNProtocol {
         nBuffered = 0;
 
         while (true) {
-            // System.out.println("ack expected: " + ackExpected);
-            // System.out.println("next frame to send: " + nextFrameToSend);
+            System.out.println("ack expected: " + ackExpected);
+            System.out.println("next frame to send: " + nextFrameToSend);
             event = frameWork.waitForEvent();
-            // System.out.println(event);
+            System.out.println(event);
             switch (event) {
             case NETWORK_LAYER_READY:
                 packets[nextFrameToSend] = frameWork.fromNetworkLayer();
