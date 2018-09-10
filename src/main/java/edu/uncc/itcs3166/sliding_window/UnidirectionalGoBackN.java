@@ -1,5 +1,6 @@
 package edu.uncc.itcs3166.sliding_window;
 
+import java.util.LinkedList;
 import java.util.Scanner;
 
 import edu.uncc.itcs3166.sliding_window.Framework.eventType;
@@ -104,6 +105,7 @@ public class UnidirectionalGoBackN {
     void GoBackNReceiver() {
         int expectedFrame = 0;
         Frame bufferFrame;
+        LinkedList<Frame> bufferFrameList = new LinkedList<Frame>();
 
         while (true) {
             // only outputs received frames (if they're in order) and transmits
@@ -115,10 +117,21 @@ public class UnidirectionalGoBackN {
             // only event possibility is frame_arrival. no timeouts are set (no
             // calls to startTimer())
             bufferFrame = receivingFramework.fromPhysicalLayer();
-            if (bufferFrame.getSequenceNumber() == expectedFrame) {
-                receivingFramework.toNetworkLayer(bufferFrame.getPacket());
-                expectedFrame = receivingFramework.inc(expectedFrame);
-                System.out.println("sending frame...");
+            while (!bufferFrame.equals(new Frame())) {
+                bufferFrameList.add(bufferFrame);
+                bufferFrame = receivingFramework.fromPhysicalLayer();
+            }
+            int i = 0;
+            while (bufferFrameList.size() > 0 && i < bufferFrameList.size()) {
+                if (bufferFrameList.get(i)
+                        .getSequenceNumber() == expectedFrame) {
+                    receivingFramework.toNetworkLayer(bufferFrame.getPacket());
+                    expectedFrame = receivingFramework.inc(expectedFrame);
+                    bufferFrameList.remove(i);
+                    i = 0;
+                } else {
+                    i++;
+                }
             }
 
         }
