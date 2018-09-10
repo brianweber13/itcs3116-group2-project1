@@ -35,12 +35,11 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class Framework {
     public enum eventType {
-        FRAME_ARRIVAL, CHECKSUM_ERR, TIMEOUT, NETWORK_LAYER_READY
+        FRAME_ARRIVAL, CHECKSUM_ERR, TIMEOUT
     }
 
     final static int MAX_PKT = 1024;
-    final static String PHYSICAL_LAYER_FILE0 = "physical-layer0";
-    final static String PHYSICAL_LAYER_FILE1 = "physical-layer1";
+    final static String PHYSICAL_LAYER_FILE = "physical-layer";
     final int MAX_SEQUENCE_NUMBER;
     final int TIMEOUT_IN_MILLIS;
     final Scanner scanner;
@@ -48,11 +47,7 @@ public class Framework {
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
     private String fileChecksum;
-    private boolean networkLayerEnabled = true;
     private Map<Integer, Long> runningTimers = new HashMap<Integer, Long>();
-
-    private File inputPhysicalLayerFile;
-    private File outputPhysicalLayerFile;
 
     /**
      * @param mAX_SEQUENCE_NUMBER
@@ -84,33 +79,13 @@ public class Framework {
     }
 
     /**
-     * does set up stuff needed in all constructors uses two file: one for
-     * input, one for output. In a real live situation, a wire does something
-     * similar because it completes a circuit with the NIC on the other machine
+     * does set up stuff needed in all constructors
      */
     void init() {
         try {
-            File physicalLayer0 = new File(PHYSICAL_LAYER_FILE0);
-            File physicalLayer1 = new File(PHYSICAL_LAYER_FILE1);
-            if (physicalLayer0.exists() && !physicalLayer1.exists()) {
-                outputPhysicalLayerFile = physicalLayer0;
-                inputPhysicalLayerFile = physicalLayer1;
-                inputPhysicalLayerFile.createNewFile(); // if file already
-                                                        // exists, this will
-                                                        // do nothing
-            } else {
-                if (physicalLayer0.exists() && !physicalLayer1.delete()) {
-                    throw new IOException("failed to delete file "
-                            + physicalLayer1.getPath());
-                } else {
-                    inputPhysicalLayerFile = physicalLayer0;
-                    inputPhysicalLayerFile.createNewFile(); // if file already
-                                                            // exists, this will
-                                                            // do nothing
-                    outputPhysicalLayerFile = physicalLayer1;
-                    // leave output un created for now...
-                }
-            }
+            File physicalLayer = new File(PHYSICAL_LAYER_FILE);
+            // if file already exists will do nothing
+            physicalLayer.createNewFile();
         } catch (IOException e) {
             System.out.println(
                     "Cannot create file for physical layer. Do you have "
@@ -118,7 +93,7 @@ public class Framework {
                             + System.getProperty("user.dir") + "?");
             e.printStackTrace();
         }
-        fileChecksum = generateChecksum(inputPhysicalLayerFile.getPath());
+        fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
     }
 
     /**
@@ -154,27 +129,6 @@ public class Framework {
      */
     eventType waitForEvent() {
         while (true) {
-            // System.out.println("WHILE LOOP");
-            // boolean inputIsReady = false;
-            // ExecutorService executor = Executors.newCachedThreadPool();
-            // Callable<Object> task = new Callable<Object>() {
-            // public Object call() {
-            // return scanner.hasNext();
-            // }
-            // };
-            // Future<Object> future = executor.submit(task);
-            // try {
-            // Object result = future.get(201, TimeUnit.MILLISECONDS);
-            // System.out.println(result);
-            // } catch (TimeoutException ex) {
-            // inputIsReady = false;
-            // } catch (InterruptedException e) {
-            // } catch (ExecutionException e) {
-            // } finally {
-            // future.cancel(true);
-            // }
-            // throttle the while loop so packets are sent at a rate that humans
-            // can easily observe
             try {
                 Thread.sleep(201);
             } catch (InterruptedException e) {
@@ -182,27 +136,18 @@ public class Framework {
                 e.printStackTrace();
             }
             // check if file has changed
-            String newChecksum = generateChecksum(
-                    inputPhysicalLayerFile.getPath());
-            // System.out.println("old checksum: " + fileChecksum);
-            // System.out.println("new checksum: " + newChecksum);
+            String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
             if (!newChecksum.equals(fileChecksum)) {
                 fileChecksum = newChecksum;
                 return eventType.FRAME_ARRIVAL;
-            }
-            if (networkLayerEnabled) {
-                return eventType.NETWORK_LAYER_READY;
-            }
-            if (runningTimers.size() > 0) {
+            } else if (runningTimers.size() > 0) {
                 for (Map.Entry<Integer, Long> pair : runningTimers.entrySet()) {
                     if (System.currentTimeMillis() > (pair.getValue()
                             + TIMEOUT_IN_MILLIS)) {
-                        // System.out.println(runningTimers.toString());
                         return eventType.TIMEOUT;
                     }
                 }
-            }
-            // TODO: Implement checksumerr here
+            } // TODO: Implement checksumerr here
         }
     }
 
@@ -238,17 +183,18 @@ public class Framework {
         Frame frameFromPhysicalLayer = new Frame();
         try {
             reader = new ObjectInputStream(
-                    new FileInputStream(inputPhysicalLayerFile));
+                    new FileInputStream(PHYSICAL_LAYER_FILE));
             frameFromPhysicalLayer = (Frame) reader.readObject();
             reader.close();
         } catch (FileNotFoundException ex) {
             System.out.println("Unable to open file '"
-                    + inputPhysicalLayerFile.getAbsolutePath()
+                    + System.getProperty("user.dir")
+                    + System.getProperty("path.separator") + PHYSICAL_LAYER_FILE
                     + "' for reading. File Not Found.");
             ex.printStackTrace();
         } catch (IOException ex) {
-            System.out.println("Error reading file '"
-                    + inputPhysicalLayerFile.getAbsolutePath() + "'");
+            System.out.println(
+                    "Error reading file '" + PHYSICAL_LAYER_FILE + "'");
             ex.printStackTrace();
         } catch (ClassNotFoundException e) {
             System.out.println("ClassNotFoundException...");
@@ -265,13 +211,14 @@ public class Framework {
     void toPhysicalLayer(Frame frameToSend) {
         try {
             writer = new ObjectOutputStream(
-                    new FileOutputStream(outputPhysicalLayerFile));
+                    new FileOutputStream(PHYSICAL_LAYER_FILE));
             writer.writeObject(frameToSend);
             writer.close();
-            // fileChecksum = generateChecksum(outputPhysicalLayerFile);
+            fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
         } catch (IOException ex) {
             System.out.println("Unable to open file '"
-                    + outputPhysicalLayerFile.getAbsolutePath()
+                    + System.getProperty("user.dir")
+                    + System.getProperty("file.separator") + PHYSICAL_LAYER_FILE
                     + "' For writing. Do you have"
                     + " write permissions on this directory? Does this file exist?");
             ex.printStackTrace();
@@ -296,14 +243,6 @@ public class Framework {
 
     void stopTimer(int sequenceNumber) {
         runningTimers.remove(sequenceNumber);
-    }
-
-    void enableNetworkLayer() {
-        networkLayerEnabled = true;
-    }
-
-    void disableNetworkLayer() {
-        networkLayerEnabled = false;
     }
 
     /**
