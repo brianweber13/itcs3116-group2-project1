@@ -48,24 +48,24 @@ public class GoBackNProtocol {
             event = frameWork.waitForEvent();
             // System.out.println(event);
             switch (event) {
-            case NETWORK_LAYER_READY:
-                packets[nextFrameToSend] = frameWork.fromNetworkLayer();
-                nBuffered = nBuffered + 1;
-                sendData(nextFrameToSend, frameExpected, packets);
-                nextFrameToSend = frameWork.inc(nextFrameToSend, MAX_SEQ);
-                break;
+            // case NETWORK_LAYER_READY:
+            // packets[nextFrameToSend] = frameWork.fromNetworkLayer();
+            // nBuffered = nBuffered + 1;
+            // sendData(nextFrameToSend, frameExpected, packets);
+            // nextFrameToSend = frameWork.inc(nextFrameToSend, MAX_SEQ);
+            // break;
 
             case FRAME_ARRIVAL:
                 r = frameWork.fromPhysicalLayer();
                 if (r.getSequenceNumber() == frameExpected) {
                     frameWork.toNetworkLayer(r.getPacket());
-                    ackExpected = frameWork.inc(ackExpected, MAX_SEQ);
+                    ackExpected = frameWork.inc(ackExpected);
                 }
                 while (frameWork.between(ackExpected,
                         r.getAcknowledgmentNumber(), nextFrameToSend)) {
                     nBuffered = nBuffered - 1;
                     frameWork.stopTimer(ackExpected);
-                    ackExpected = frameWork.inc(ackExpected, MAX_SEQ);
+                    ackExpected = frameWork.inc(ackExpected);
                 }
                 break;
 
@@ -73,18 +73,22 @@ public class GoBackNProtocol {
                 nextFrameToSend = ackExpected;
                 for (i = 1; i <= nBuffered; i++) {
                     sendData(nextFrameToSend, frameExpected, packets);
-                    nextFrameToSend = frameWork.inc(nextFrameToSend, MAX_SEQ);
+                    nextFrameToSend = frameWork.inc(nextFrameToSend);
                 }
                 break;
             default:
                 break;
             }
+            packets[nextFrameToSend] = frameWork.fromNetworkLayer();
+            nBuffered = nBuffered + 1;
+            sendData(nextFrameToSend, frameExpected, packets);
+            nextFrameToSend = frameWork.inc(nextFrameToSend);
 
-            if (nBuffered < MAX_SEQ) {
-                frameWork.enableNetworkLayer();
-            } else {
-                frameWork.disableNetworkLayer();
-            }
+            // if (nBuffered < MAX_SEQ) {
+            // frameWork.enableNetworkLayer();
+            // } else {
+            // frameWork.disableNetworkLayer();
+            // }
         }
 
     }
