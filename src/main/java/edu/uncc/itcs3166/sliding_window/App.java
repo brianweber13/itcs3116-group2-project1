@@ -1,7 +1,5 @@
 package edu.uncc.itcs3166.sliding_window;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 /**
@@ -60,54 +58,43 @@ public class App {
     }
 
     private static void demoGoBackN() {
-        Scanner packetInput = new Scanner("alpha beta charlie delta echo");
-        String packetInputFileName = "";
         boolean gotInfo = false;
-        while (!gotInfo) {
-            System.out.println("Send letters (l) or numbers (n)?");
-            String input = scanner.nextLine();
-            switch (Character.toLowerCase(input.charAt(0))) {
-            case 'l':
-                packetInputFileName = "alphabet-packets.txt";
-                gotInfo = true;
-                break;
-            case 'n':
-                packetInputFileName = "number-packets.txt";
-                gotInfo = true;
-                break;
-            default:
-                System.out.println("Please enter 'l' or 'n'");
-            }
-        }
-        try {
-            packetInput = new Scanner(new File(packetInputFileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        gotInfo = false;
         boolean failPackets = false;
+        int maxSequenceNumber = 5;
+        int timeoutInMillis = 5000;
+        UnidirectionalGoBackN p;
+
         while (!gotInfo) {
             System.out.println("Would you like some packets to fail? (y/n)");
             String input = scanner.nextLine();
             switch (Character.toLowerCase(input.charAt(0))) {
             case 'y':
                 failPackets = true;
+                gotInfo = true;
                 break;
             case 'n':
+                gotInfo = true;
                 break;
             default:
                 System.out.println("Please enter 'y' or 'n'");
             }
-            GoBackNProtocol p = new GoBackNProtocol(packetInput, failPackets);
-            // sleep to allow time for user to launch two instances and have
-            // GoBackNProtocol.init() functions complete before continuing.
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                System.out.println("Could not sleep thread...");
-                e.printStackTrace();
+        }
+
+        p = new UnidirectionalGoBackN(maxSequenceNumber, timeoutInMillis,
+                failPackets, scanner);
+
+        while (true) {
+            System.out.println(
+                    "Is this instance the sender (s) or receiver (r)?");
+            String input = scanner.nextLine();
+            switch (Character.toLowerCase(input.charAt(0))) {
+            case 's':
+                p.GoBackNSender();
+            case 'r':
+                p.GoBackNReceiver();
+            default:
+                System.out.println("Please enter 's' or 'r'");
             }
-            p.protocol5();
         }
 
         // boolean failPackets = false;
