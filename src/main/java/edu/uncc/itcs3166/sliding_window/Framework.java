@@ -11,7 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
@@ -96,6 +98,60 @@ public class Framework {
         fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
     }
 
+    public Map<Integer, Long> getRunningTimers() {
+        return runningTimers;
+    }
+
+    public static String[] differences(String[] first, String[] second) {
+        String[] sortedFirst = Arrays.copyOf(first, first.length); // O(n)
+        String[] sortedSecond = Arrays.copyOf(second, second.length); // O(m)
+        Arrays.sort(sortedFirst); // O(n log n)
+        Arrays.sort(sortedSecond); // O(m log m)
+
+        int firstIndex = 0;
+        int secondIndex = 0;
+
+        LinkedList<String> diffs = new LinkedList<String>();
+
+        while (firstIndex < sortedFirst.length
+                && secondIndex < sortedSecond.length) { // O(n + m)
+            int compare = (int) Math.signum(sortedFirst[firstIndex]
+                    .compareTo(sortedSecond[secondIndex]));
+
+            switch (compare) {
+            case -1:
+                diffs.add(sortedFirst[firstIndex]);
+                firstIndex++;
+                break;
+            case 1:
+                diffs.add(sortedSecond[secondIndex]);
+                secondIndex++;
+                break;
+            default:
+                firstIndex++;
+                secondIndex++;
+            }
+        }
+
+        if (firstIndex < sortedFirst.length) {
+            append(diffs, sortedFirst, firstIndex);
+        } else if (secondIndex < sortedSecond.length) {
+            append(diffs, sortedSecond, secondIndex);
+        }
+
+        String[] strDups = new String[diffs.size()];
+
+        return diffs.toArray(strDups);
+    }
+
+    private static void append(LinkedList<String> diffs, String[] sortedArray,
+            int index) {
+        while (index < sortedArray.length) {
+            diffs.add(sortedArray[index]);
+            index++;
+        }
+    }
+
     /**
      * generates a checksum for the given file in order to discover when the
      * file has changed
@@ -129,12 +185,12 @@ public class Framework {
      */
     eventType waitForEvent() {
         while (true) {
-            try {
-                Thread.sleep(201);
-            } catch (InterruptedException e) {
-                System.out.println("Could not sleep thread...");
-                e.printStackTrace();
-            }
+            // try {
+            // Thread.sleep(201);
+            // } catch (InterruptedException e) {
+            // System.out.println("Could not sleep thread...");
+            // e.printStackTrace();
+            // }
             // check if file has changed
             String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
             if (!newChecksum.equals(fileChecksum)) {
@@ -231,6 +287,9 @@ public class Framework {
             int succeed = rand.nextInt(3);
             if (succeed != 0) {
                 toPhysicalLayer(frameToSend);
+            } else {
+                System.out.println("The following frame was lost: "
+                        + frameToSend.toString());
             }
         } else {
             toPhysicalLayer(frameToSend);
@@ -257,12 +316,10 @@ public class Framework {
      * 
      * @param i
      *            number to increment
-     * @param max
-     *            MAX_SEQUENCE_NUMBER
      * @return the incremented number
      */
-    int inc(int i, int max) {
-        if (i < max)
+    int inc(int i) {
+        if (i < MAX_SEQUENCE_NUMBER)
             i++;
         else
             i = 0;
