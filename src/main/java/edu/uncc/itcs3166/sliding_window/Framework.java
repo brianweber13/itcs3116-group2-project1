@@ -13,10 +13,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -46,10 +49,13 @@ public class Framework {
     final int TIMEOUT_IN_MILLIS;
     final Scanner scanner;
 
+    private File physicalLayerFile = new File(PHYSICAL_LAYER_FILE);
     private ObjectOutputStream writer;
     private ObjectInputStream reader;
     private String fileChecksum;
     private Map<Integer, Long> runningTimers = new HashMap<Integer, Long>();
+    private HashSet<File> knownFiles;
+    private HashSet<File> newFiles;
 
     /**
      * @param mAX_SEQUENCE_NUMBER
@@ -84,73 +90,90 @@ public class Framework {
      * does set up stuff needed in all constructors
      */
     void init() {
-        try {
-            File physicalLayer = new File(PHYSICAL_LAYER_FILE);
-            // if file already exists will do nothing
-            physicalLayer.createNewFile();
-        } catch (IOException e) {
-            System.out.println(
-                    "Cannot create file for physical layer. Do you have "
-                            + "write permissions on the directory "
-                            + System.getProperty("user.dir") + "?");
-            e.printStackTrace();
+        if (!physicalLayerFile.isDirectory()) {
+            if (physicalLayerFile.exists()) {
+                physicalLayerFile.delete();
+            }
+            physicalLayerFile.mkdir();
         }
-        fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
+        if (physicalLayerFile.list().length > 0) {
+            File[] entries = physicalLayerFile.listFiles();
+            for (File s : entries) {
+                s.delete();
+            }
+        }
+        knownFiles = new HashSet();
+        // File physicalLayer = new File(PHYSICAL_LAYER_FILE);
+        // if file already exists will do nothing
+        // physicalLayer.createNewFile();
+        // fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
     }
 
     public Map<Integer, Long> getRunningTimers() {
         return runningTimers;
     }
 
-    public static String[] differences(String[] first, String[] second) {
-        String[] sortedFirst = Arrays.copyOf(first, first.length); // O(n)
-        String[] sortedSecond = Arrays.copyOf(second, second.length); // O(m)
-        Arrays.sort(sortedFirst); // O(n log n)
-        Arrays.sort(sortedSecond); // O(m log m)
-
-        int firstIndex = 0;
-        int secondIndex = 0;
-
-        LinkedList<String> diffs = new LinkedList<String>();
-
-        while (firstIndex < sortedFirst.length
-                && secondIndex < sortedSecond.length) { // O(n + m)
-            int compare = (int) Math.signum(sortedFirst[firstIndex]
-                    .compareTo(sortedSecond[secondIndex]));
-
-            switch (compare) {
-            case -1:
-                diffs.add(sortedFirst[firstIndex]);
-                firstIndex++;
-                break;
-            case 1:
-                diffs.add(sortedSecond[secondIndex]);
-                secondIndex++;
-                break;
-            default:
-                firstIndex++;
-                secondIndex++;
-            }
-        }
-
-        if (firstIndex < sortedFirst.length) {
-            append(diffs, sortedFirst, firstIndex);
-        } else if (secondIndex < sortedSecond.length) {
-            append(diffs, sortedSecond, secondIndex);
-        }
-
-        String[] strDups = new String[diffs.size()];
-
-        return diffs.toArray(strDups);
+    private Set<File> difference(final Set<File> set1, final Set<File> set2) {
+        final Set<File> larger = set1.size() > set2.size() ? set1 : set2;
+        final Set<File> smaller = larger.equals(set1) ? set2 : set1;
+        return larger.stream().filter(n -> !smaller.contains(n))
+                .collect(Collectors.toSet());
     }
 
-    private static void append(LinkedList<String> diffs, String[] sortedArray,
-            int index) {
-        while (index < sortedArray.length) {
-            diffs.add(sortedArray[index]);
-            index++;
-        }
-    }
+    // public static File[] differences(File[] first, File[] second) {
+    // File[] sortedFirst = Arrays.copyOf(first, first.length); // O(n)
+    // File[] sortedSecond = Arrays.copyOf(second, second.length); // O(m)
+    // Arrays.sort(sortedFirst); // O(n log n)
+    // Arrays.sort(sortedSecond); // O(m log m)
+    //
+    // int firstIndex = 0;
+    // int secondIndex = 0;
+    //
+    // LinkedList<File> diffs = new LinkedList<File>();
+    //
+    // while (firstIndex < sortedFirst.length
+    // && secondIndex < sortedSecond.length) { // O(n + m)
+    // int compare = (int) Math.signum(sortedFirst[firstIndex]
+    // .compareTo(sortedSecond[secondIndex]));
+    //
+    // switch (compare) {
+    // case -1:
+    // diffs.add(sortedFirst[firstIndex]);
+    // firstIndex++;
+    // break;
+    // case 1:
+    // diffs.add(sortedSecond[secondIndex]);
+    // secondIndex++;
+    // break;
+    // default:
+    // firstIndex++;
+    // secondIndex++;
+    // }
+    // }
+    //
+    // if (firstIndex < sortedFirst.length) {
+    // append(diffs, sortedFirst, firstIndex);
+    // } else if (secondIndex < sortedSecond.length) {
+    // append(diffs, sortedSecond, secondIndex);
+    // }
+    //
+    // File[] strDups = new File[diffs.size()];
+    //
+    // return diffs.toArray(strDups);
+    // }
+    //
+    // private static void append(LinkedList<File> diffs, File[] sortedArray,
+    // int index) {
+    // while (index < sortedArray.length) {
+    // diffs.add(sortedArray[index]);
+    // index++;
+    // }
+    // }
+    //
+    // public void removeElement(Object[] arr, int removedIdx) {
+    // System.arraycopy(arr, removedIdx + 1, arr, removedIdx,
+    // arr.length - 1 - removedIdx);
+    // }
 
     /**
      * generates a checksum for the given file in order to discover when the
@@ -191,10 +214,16 @@ public class Framework {
             // System.out.println("Could not sleep thread...");
             // e.printStackTrace();
             // }
+
             // check if file has changed
-            String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
-            if (!newChecksum.equals(fileChecksum)) {
-                fileChecksum = newChecksum;
+            // String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
+            HashSet<File> tmpFiles = new HashSet<File>(
+                    Arrays.asList(physicalLayerFile.listFiles()));
+            // if (!newChecksum.equals(fileChecksum)) {
+            if (!tmpFiles.equals(knownFiles)) {
+                // fileChecksum = newChecksum;
+                newFiles = new HashSet(difference(tmpFiles, knownFiles));
+                knownFiles.addAll(newFiles);
                 return eventType.FRAME_ARRIVAL;
             } else if (runningTimers.size() > 0) {
                 for (Map.Entry<Integer, Long> pair : runningTimers.entrySet()) {
@@ -237,25 +266,38 @@ public class Framework {
      */
     Frame fromPhysicalLayer() {
         Frame frameFromPhysicalLayer = new Frame();
+        File inputFile = null;
+
+        // System.out.println("newFiles size: " + newFiles.size());
+        if (newFiles.size() == 0) {
+            return new Frame();
+        } else {
+            Iterator<File> it = newFiles.iterator();
+            inputFile = it.next();
+            Boolean result = newFiles.remove(inputFile);
+            // System.out.println("Remove succeded? " + result);
+            // System.out.println("new files: " + newFiles);
+        }
+
         try {
-            reader = new ObjectInputStream(
-                    new FileInputStream(PHYSICAL_LAYER_FILE));
+            reader = new ObjectInputStream(new FileInputStream(inputFile));
             frameFromPhysicalLayer = (Frame) reader.readObject();
             reader.close();
         } catch (FileNotFoundException ex) {
-            System.out.println("Unable to open file '"
-                    + System.getProperty("user.dir")
-                    + System.getProperty("path.separator") + PHYSICAL_LAYER_FILE
-                    + "' for reading. File Not Found.");
+            System.out.println(
+                    "Unable to open file '" + inputFile.getAbsolutePath()
+                            + "' for reading. File may not exist?");
             ex.printStackTrace();
         } catch (IOException ex) {
             System.out.println(
-                    "Error reading file '" + PHYSICAL_LAYER_FILE + "'");
+                    "Error reading file '" + inputFile.getAbsolutePath() + "'");
             ex.printStackTrace();
         } catch (ClassNotFoundException e) {
             System.out.println("ClassNotFoundException...");
             e.printStackTrace();
         }
+        // System.out.println("receiving from physical layer: "
+        // + frameFromPhysicalLayer.toString());
         return frameFromPhysicalLayer;
     }
 
@@ -265,18 +307,32 @@ public class Framework {
      * @param frameToSend
      */
     void toPhysicalLayer(Frame frameToSend) {
+        // System.out.println(
+        // "sending to physical layer: " + frameToSend.toString());
+        File outputFile = null;
         try {
-            writer = new ObjectOutputStream(
-                    new FileOutputStream(PHYSICAL_LAYER_FILE));
+            outputFile = File.createTempFile(PHYSICAL_LAYER_FILE, null,
+                    physicalLayerFile);
+        } catch (IOException e) {
+            System.out.println("unable to create tmp file in directory "
+                    + physicalLayerFile.getAbsolutePath());
+            e.printStackTrace();
+        }
+        try {
+            writer = new ObjectOutputStream(new FileOutputStream(outputFile));
             writer.writeObject(frameToSend);
             writer.close();
-            fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
+            // fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
+
+            // HashSet<File> files = new HashSet<File>(
+            // Arrays.asList(physicalLayerFile.listFiles()));
+            // knownFiles.addAll(files);
+            knownFiles.add(outputFile);
         } catch (IOException ex) {
-            System.out.println("Unable to open file '"
-                    + System.getProperty("user.dir")
-                    + System.getProperty("file.separator") + PHYSICAL_LAYER_FILE
-                    + "' For writing. Do you have"
-                    + " write permissions on this directory? Does this file exist?");
+            System.out.println(
+                    "Unable to open file '" + outputFile.getAbsolutePath()
+                            + "' For writing. Do you have"
+                            + " write permissions on this directory?");
             ex.printStackTrace();
         }
     }
