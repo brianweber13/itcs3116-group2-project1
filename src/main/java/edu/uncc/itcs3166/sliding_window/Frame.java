@@ -65,10 +65,13 @@ public class Frame implements Serializable {
     }
 
     public String toString() {
-        String description = "### FRAME ###\n" + "Kind: " + this.kind + "\n"
-                + "Sequence Number: " + this.sequenceNumber + "\n"
-                + "Acknowledgement Number: " + this.acknowledgmentNumber + "\n"
-                + "Packet: " + this.packet;
+        // String description = "### FRAME ###\n" + "Kind: " + this.kind + "\n"
+        // + "Sequence Number: " + this.sequenceNumber + "\n"
+        // + "Acknowledgement Number: " + this.acknowledgmentNumber + "\n"
+        // + "Packet: " + this.packet;
+        String description = "### FRAME ###\n" + "Sequence Number: "
+                + this.sequenceNumber + "\n" + "Acknowledgement Number: "
+                + this.acknowledgmentNumber + "\n" + "Packet: " + this.packet;
         return description;
     }
 
