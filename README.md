@@ -1,10 +1,7 @@
 # ITCS 3166 Group 2 Project 1
-## What works (and what doesn't
+## What works (and what doesn't)
  * sends frames successfully and receives them in order
  * does not resend lost frames
- * only sends frames in multiples of MAX_SEQUENCE_NUMBER (currently hardcoded
-   to be 5)
- * receiver does not send acknowledgments for every frame.
 
 ## Getting Started With Development
  1. We encourage using eclipse. If you'd like to use another IDE, continue to
