@@ -58,27 +58,27 @@ public class App {
     }
 
     private static void demoGoBackN() {
-        boolean gotInfo = false;
+        // boolean gotInfo = false;
         boolean failPackets = false;
         int maxSequenceNumber = 5;
         int timeoutInMillis = 5000;
         UnidirectionalGoBackN p;
 
-        while (!gotInfo) {
-            System.out.println("Would you like some packets to fail? (y/n)");
-            String input = scanner.nextLine();
-            switch (Character.toLowerCase(input.charAt(0))) {
-            case 'y':
-                failPackets = true;
-                gotInfo = true;
-                break;
-            case 'n':
-                gotInfo = true;
-                break;
-            default:
-                System.out.println("Please enter 'y' or 'n'");
-            }
-        }
+        // while (!gotInfo) {
+        // System.out.println("Would you like some packets to fail? (y/n)");
+        // String input = scanner.nextLine();
+        // switch (Character.toLowerCase(input.charAt(0))) {
+        // case 'y':
+        // failPackets = true;
+        // gotInfo = true;
+        // break;
+        // case 'n':
+        // gotInfo = true;
+        // break;
+        // default:
+        // System.out.println("Please enter 'y' or 'n'");
+        // }
+        // }
 
         p = new UnidirectionalGoBackN(maxSequenceNumber, timeoutInMillis,
                 failPackets, scanner);
