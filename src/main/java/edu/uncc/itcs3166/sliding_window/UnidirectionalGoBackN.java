@@ -25,6 +25,7 @@ public class UnidirectionalGoBackN {
         MAX_SEQUENCE_NUMBER = mAX_SEQUENCE_NUMBER;
         TIMEOUT_IN_MILLIS = tIMEOUT_IN_MILLIS;
         this.failSomePackets = failSomePackets;
+        // System.out.println("max seq: " + mAX_SEQUENCE_NUMBER);
         this.sendingFramework = new Framework(mAX_SEQUENCE_NUMBER,
                 tIMEOUT_IN_MILLIS, scanner);
         this.receivingFramework = new Framework(mAX_SEQUENCE_NUMBER,
@@ -44,28 +45,31 @@ public class UnidirectionalGoBackN {
         int nextFrameToSend = 0;
         int expectedAcknowledgment = 0;
         Frame bufferFrame;
-        String[] packets = new String[MAX_SEQUENCE_NUMBER];
+        String[] packets = new String[MAX_SEQUENCE_NUMBER + 1];
         eventType event;
 
         while (true) {
             // for (int i = 0; i < MAX_SEQUENCE_NUMBER; i++) {
-            while (nextFrameToSend < MAX_SEQUENCE_NUMBER) {
-                try {
-                    Thread.sleep(201);
-                } catch (InterruptedException e) {
-                    System.out.println("Could not sleep thread...");
-                    e.printStackTrace();
-                }
+            while (nextFrameToSend <= MAX_SEQUENCE_NUMBER) {
+
+                // try {
+                // Thread.sleep(201);
+                // } catch (InterruptedException e) {
+                // System.out.println("Could not sleep thread...");
+                // e.printStackTrace();
+                // }
+                // System.out.println("expected ack: " + expectedAcknowledgment
+                // + ", nextFrameToSend: " + nextFrameToSend);
                 packets[nextFrameToSend] = sendingFramework.fromNetworkLayer();
                 sendData(nextFrameToSend, packets);
                 nextFrameToSend = sendingFramework.inc(nextFrameToSend);
             }
-            try {
-                Thread.sleep(201);
-            } catch (InterruptedException e) {
-                System.out.println("Could not sleep thread...");
-                e.printStackTrace();
-            }
+            // try {
+            // Thread.sleep(201);
+            // } catch (InterruptedException e) {
+            // System.out.println("Could not sleep thread...");
+            // e.printStackTrace();
+            // }
 
             event = sendingFramework.waitForEvent();
             // System.out.println("got event: " + event);
@@ -75,6 +79,7 @@ public class UnidirectionalGoBackN {
                 // acknowledgments
 
                 bufferFrame = sendingFramework.fromPhysicalLayer();
+
                 // if (bufferFrame
                 // .getAcknowledgmentNumber() == expectedAcknowledgment) {
                 // framework.stopTimer(expectedAcknowledgment);
@@ -87,14 +92,21 @@ public class UnidirectionalGoBackN {
                 // also received
                 // System.out.println("Got acknowledgment for frame #"
                 // + bufferFrame.getAcknowledgmentNumber());
-                while (expectedAcknowledgment <= bufferFrame
-                        .getAcknowledgmentNumber()) {
-                    sendingFramework.stopTimer(expectedAcknowledgment);
-                    expectedAcknowledgment = sendingFramework
-                            .inc(expectedAcknowledgment);
+                while (!bufferFrame.equals(new Frame())) {
+
+                    bufferFrame = receivingFramework.fromPhysicalLayer();
+                    while (expectedAcknowledgment <= bufferFrame
+                            .getAcknowledgmentNumber()) {
+                        sendingFramework.stopTimer(expectedAcknowledgment);
+                        expectedAcknowledgment = sendingFramework
+                                .inc(expectedAcknowledgment);
+                        // System.out.println(
+                        // "expected ack: " + expectedAcknowledgment);
+                    }
                 }
                 break;
             case TIMEOUT:
+                System.out.println("Timeout!");
                 nextFrameToSend = expectedAcknowledgment;
                 break;
             default:
@@ -109,6 +121,8 @@ public class UnidirectionalGoBackN {
         LinkedList<Frame> bufferFrameList = new LinkedList<Frame>();
 
         while (true) {
+
+            // System.out.println("expected Frame " + expectedFrame);
             // only outputs received frames (if they're in order) and transmits
             // acknowledgments for those received frames. Does not track what
             // acknowledgments were received by the other party
@@ -119,6 +133,7 @@ public class UnidirectionalGoBackN {
             // only event possibility is frame_arrival. no timeouts are set (no
             // calls to startTimer())
             bufferFrame = receivingFramework.fromPhysicalLayer();
+            // fromPhysicalLayer returns new Frame() if there's nothing new
             while (!bufferFrame.equals(new Frame())) {
                 bufferFrameList.add(bufferFrame);
                 bufferFrame = receivingFramework.fromPhysicalLayer();
@@ -130,6 +145,8 @@ public class UnidirectionalGoBackN {
                     receivingFramework
                             .toNetworkLayer(bufferFrameList.get(i).getPacket());
                     Frame outboundAck = new Frame(null, 0, expectedFrame, null);
+                    System.out.println(
+                            "sending acknowledgment: " + expectedFrame);
                     receivingFramework.toPhysicalLayer(outboundAck);
                     expectedFrame = receivingFramework.inc(expectedFrame);
                     bufferFrameList.remove(i);
