@@ -81,12 +81,18 @@ public class Frame implements Serializable {
         else if (obj == null)
             return false;
         else if (obj instanceof Frame) {
-            Frame frameToCompare = (Frame) obj;
-            if (this.kind == frameToCompare.kind
-                    && this.sequenceNumber == frameToCompare.sequenceNumber
-                    && this.acknowledgmentNumber == frameToCompare.acknowledgmentNumber
-                    && this.packet.equals(frameToCompare.packet)) {
+            if (((Frame) obj).packet == null && this.packet == null) {
                 return true;
+            } else if (((Frame) obj).packet == null || this.packet == null) {
+                return false;
+            } else {
+                Frame frameToCompare = (Frame) obj;
+                if (this.kind == frameToCompare.kind
+                        && this.sequenceNumber == frameToCompare.sequenceNumber
+                        && this.acknowledgmentNumber == frameToCompare.acknowledgmentNumber
+                        && this.packet.equals(frameToCompare.packet)) {
+                    return true;
+                }
             }
         }
         return false;
