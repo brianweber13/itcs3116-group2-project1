@@ -274,7 +274,8 @@ public class Framework {
         } else {
             Iterator<File> it = newFiles.iterator();
             inputFile = it.next();
-            Boolean result = newFiles.remove(inputFile);
+            newFiles.remove(inputFile);
+            // Boolean result = newFiles.remove(inputFile);
             // System.out.println("Remove succeded? " + result);
             // System.out.println("new files: " + newFiles);
         }
@@ -282,6 +283,7 @@ public class Framework {
         try {
             reader = new ObjectInputStream(new FileInputStream(inputFile));
             frameFromPhysicalLayer = (Frame) reader.readObject();
+            // System.out.println("from physical: " + frameFromPhysicalLayer);
             reader.close();
         } catch (FileNotFoundException ex) {
             System.out.println(
@@ -321,6 +323,7 @@ public class Framework {
         try {
             writer = new ObjectOutputStream(new FileOutputStream(outputFile));
             writer.writeObject(frameToSend);
+            // System.out.println("to physical: " + frameToSend);
             writer.close();
             // fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
 
