@@ -103,10 +103,6 @@ public class Framework {
             }
         }
         knownFiles = new HashSet();
-        // File physicalLayer = new File(PHYSICAL_LAYER_FILE);
-        // if file already exists will do nothing
-        // physicalLayer.createNewFile();
-        // fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
     }
 
     public Map<Integer, Long> getRunningTimers() {
@@ -119,61 +115,6 @@ public class Framework {
         return larger.stream().filter(n -> !smaller.contains(n))
                 .collect(Collectors.toSet());
     }
-
-    // public static File[] differences(File[] first, File[] second) {
-    // File[] sortedFirst = Arrays.copyOf(first, first.length); // O(n)
-    // File[] sortedSecond = Arrays.copyOf(second, second.length); // O(m)
-    // Arrays.sort(sortedFirst); // O(n log n)
-    // Arrays.sort(sortedSecond); // O(m log m)
-    //
-    // int firstIndex = 0;
-    // int secondIndex = 0;
-    //
-    // LinkedList<File> diffs = new LinkedList<File>();
-    //
-    // while (firstIndex < sortedFirst.length
-    // && secondIndex < sortedSecond.length) { // O(n + m)
-    // int compare = (int) Math.signum(sortedFirst[firstIndex]
-    // .compareTo(sortedSecond[secondIndex]));
-    //
-    // switch (compare) {
-    // case -1:
-    // diffs.add(sortedFirst[firstIndex]);
-    // firstIndex++;
-    // break;
-    // case 1:
-    // diffs.add(sortedSecond[secondIndex]);
-    // secondIndex++;
-    // break;
-    // default:
-    // firstIndex++;
-    // secondIndex++;
-    // }
-    // }
-    //
-    // if (firstIndex < sortedFirst.length) {
-    // append(diffs, sortedFirst, firstIndex);
-    // } else if (secondIndex < sortedSecond.length) {
-    // append(diffs, sortedSecond, secondIndex);
-    // }
-    //
-    // File[] strDups = new File[diffs.size()];
-    //
-    // return diffs.toArray(strDups);
-    // }
-    //
-    // private static void append(LinkedList<File> diffs, File[] sortedArray,
-    // int index) {
-    // while (index < sortedArray.length) {
-    // diffs.add(sortedArray[index]);
-    // index++;
-    // }
-    // }
-    //
-    // public void removeElement(Object[] arr, int removedIdx) {
-    // System.arraycopy(arr, removedIdx + 1, arr, removedIdx,
-    // arr.length - 1 - removedIdx);
-    // }
 
     /**
      * generates a checksum for the given file in order to discover when the
@@ -216,12 +157,9 @@ public class Framework {
             }
 
             // check if file has changed
-            // String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
             HashSet<File> tmpFiles = new HashSet<File>(
                     Arrays.asList(physicalLayerFile.listFiles()));
-            // if (!newChecksum.equals(fileChecksum)) {
             if (!tmpFiles.equals(knownFiles)) {
-                // fileChecksum = newChecksum;
                 newFiles = new HashSet(difference(tmpFiles, knownFiles));
                 knownFiles.addAll(newFiles);
                 return eventType.FRAME_ARRIVAL;
@@ -268,22 +206,17 @@ public class Framework {
         Frame frameFromPhysicalLayer = new Frame();
         File inputFile = null;
 
-        // System.out.println("newFiles size: " + newFiles.size());
         if (newFiles.size() == 0) {
             return new Frame();
         } else {
             Iterator<File> it = newFiles.iterator();
             inputFile = it.next();
             newFiles.remove(inputFile);
-            // Boolean result = newFiles.remove(inputFile);
-            // System.out.println("Remove succeded? " + result);
-            // System.out.println("new files: " + newFiles);
         }
 
         try {
             reader = new ObjectInputStream(new FileInputStream(inputFile));
             frameFromPhysicalLayer = (Frame) reader.readObject();
-            // System.out.println("from physical: " + frameFromPhysicalLayer);
             reader.close();
         } catch (FileNotFoundException ex) {
             System.out.println(
@@ -298,8 +231,6 @@ public class Framework {
             System.out.println("ClassNotFoundException...");
             e.printStackTrace();
         }
-        // System.out.println("receiving from physical layer: "
-        // + frameFromPhysicalLayer.toString());
         return frameFromPhysicalLayer;
     }
 
@@ -309,8 +240,6 @@ public class Framework {
      * @param frameToSend
      */
     void toPhysicalLayer(Frame frameToSend) {
-        // System.out.println(
-        // "sending to physical layer: " + frameToSend.toString());
         File outputFile = null;
         try {
             outputFile = File.createTempFile(PHYSICAL_LAYER_FILE, null,
@@ -323,13 +252,7 @@ public class Framework {
         try {
             writer = new ObjectOutputStream(new FileOutputStream(outputFile));
             writer.writeObject(frameToSend);
-            // System.out.println("to physical: " + frameToSend);
             writer.close();
-            // fileChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
-
-            // HashSet<File> files = new HashSet<File>(
-            // Arrays.asList(physicalLayerFile.listFiles()));
-            // knownFiles.addAll(files);
             knownFiles.add(outputFile);
         } catch (IOException ex) {
             System.out.println(
@@ -385,13 +308,14 @@ public class Framework {
         return i;
     }
 
-    boolean between(int a, int b, int c) {
-        // return true if a<=b<c circularly, false otherwise
-        if (((a <= b) && (b < c)) || ((c < a) && (a <= b))
-                || ((b < c) && (c < a))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    // not currently used
+    // boolean between(int a, int b, int c) {
+    // // return true if a<=b<c circularly, false otherwise
+    // if (((a <= b) && (b < c)) || ((c < a) && (a <= b))
+    // || ((b < c) && (c < a))) {
+    // return true;
+    // } else {
+    // return false;
+    // }
+    // }
 }

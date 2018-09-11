@@ -12,16 +12,6 @@ public class App {
             "Simplex stop-and-wait (s)", "Go back N (n)" };
 
     public static void main(String[] args) {
-        // try {
-        // File tmp = new File("tmp");
-        // tmp.createNewFile();
-        // System.out.println(tmp.getPath());
-        // System.out.println(tmp.getAbsolutePath());
-        // System.out.println(tmp.getCanonicalPath());
-        // } catch (IOException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
         while (true) {
             System.out.println("Which protocol would you like to demonstrate?");
             for (int i = 1; i < protocolList.length + 1; i++) {
@@ -97,6 +87,7 @@ public class App {
             }
         }
 
+        // for bidirectional go-back-n: no longer used
         // boolean failPackets = false;
         // while (true) {
         // System.out.println("Would you like some packets to fail? (y/n)");

@@ -25,7 +25,6 @@ public class UnidirectionalGoBackN {
         MAX_SEQUENCE_NUMBER = mAX_SEQUENCE_NUMBER;
         TIMEOUT_IN_MILLIS = tIMEOUT_IN_MILLIS;
         this.failSomePackets = failSomePackets;
-        // System.out.println("max seq: " + mAX_SEQUENCE_NUMBER);
         this.sendingFramework = new Framework(mAX_SEQUENCE_NUMBER,
                 tIMEOUT_IN_MILLIS, scanner);
         this.receivingFramework = new Framework(mAX_SEQUENCE_NUMBER,
@@ -49,27 +48,11 @@ public class UnidirectionalGoBackN {
         eventType event;
 
         while (true) {
-            // for (int i = 0; i < MAX_SEQUENCE_NUMBER; i++) {
             while (nextFrameToSend <= MAX_SEQUENCE_NUMBER) {
-
-                // try {
-                // Thread.sleep(201);
-                // } catch (InterruptedException e) {
-                // System.out.println("Could not sleep thread...");
-                // e.printStackTrace();
-                // }
-                // System.out.println("expected ack: " + expectedAcknowledgment
-                // + ", nextFrameToSend: " + nextFrameToSend);
                 packets[nextFrameToSend] = sendingFramework.fromNetworkLayer();
                 sendData(nextFrameToSend, packets);
                 nextFrameToSend = sendingFramework.inc(nextFrameToSend);
             }
-            // try {
-            // Thread.sleep(201);
-            // } catch (InterruptedException e) {
-            // System.out.println("Could not sleep thread...");
-            // e.printStackTrace();
-            // }
 
             event = sendingFramework.waitForEvent();
             // System.out.println("got event: " + event);
@@ -80,18 +63,8 @@ public class UnidirectionalGoBackN {
 
                 bufferFrame = sendingFramework.fromPhysicalLayer();
 
-                // if (bufferFrame
-                // .getAcknowledgmentNumber() == expectedAcknowledgment) {
-                // framework.stopTimer(expectedAcknowledgment);
-                // expectedAcknowledgment = framework
-                // .inc(expectedAcknowledgment);
-                // } else if (bufferFrame
-                // .getAcknowledgmentNumber() > expectedAcknowledgment) {
-
                 // getting n acknowledged implies that n-1, n-2, etc. are
                 // also received
-                // System.out.println("Got acknowledgment for frame #"
-                // + bufferFrame.getAcknowledgmentNumber());
                 while (!bufferFrame.equals(new Frame())) {
 
                     bufferFrame = receivingFramework.fromPhysicalLayer();
@@ -100,8 +73,6 @@ public class UnidirectionalGoBackN {
                         sendingFramework.stopTimer(expectedAcknowledgment);
                         expectedAcknowledgment = sendingFramework
                                 .inc(expectedAcknowledgment);
-                        // System.out.println(
-                        // "expected ack: " + expectedAcknowledgment);
                     }
                 }
                 break;
@@ -121,15 +92,11 @@ public class UnidirectionalGoBackN {
         LinkedList<Frame> bufferFrameList = new LinkedList<Frame>();
 
         while (true) {
-
-            // System.out.println("expected Frame " + expectedFrame);
             // only outputs received frames (if they're in order) and transmits
             // acknowledgments for those received frames. Does not track what
             // acknowledgments were received by the other party
-            // receivingFramework.waitForEvent();
             receivingFramework.waitForEvent();
-            // eventType event = receivingFramework.waitForEvent();
-            // System.out.println("got event: " + event);
+
             // only event possibility is frame_arrival. no timeouts are set (no
             // calls to startTimer())
             bufferFrame = receivingFramework.fromPhysicalLayer();
