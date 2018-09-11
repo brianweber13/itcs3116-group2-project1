@@ -208,12 +208,12 @@ public class Framework {
      */
     eventType waitForEvent() {
         while (true) {
-            // try {
-            // Thread.sleep(201);
-            // } catch (InterruptedException e) {
-            // System.out.println("Could not sleep thread...");
-            // e.printStackTrace();
-            // }
+            try {
+                Thread.sleep(201);
+            } catch (InterruptedException e) {
+                System.out.println("Could not sleep thread...");
+                e.printStackTrace();
+            }
 
             // check if file has changed
             // String newChecksum = generateChecksum(PHYSICAL_LAYER_FILE);
