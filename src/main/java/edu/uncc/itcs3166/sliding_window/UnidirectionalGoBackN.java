@@ -32,13 +32,12 @@ public class UnidirectionalGoBackN {
     }
 
     public void sendData(int frameNum, String[] packets) {
-        // System.out.println("sending: " + packets[frameNum]);
+        System.out.println("sending packet: " + packets[frameNum]);
         Frame frameToSend = new Frame();
         frameToSend.setPacket(packets[frameNum]);
         frameToSend.setSequenceNumber(frameNum);
         sendingFramework.toPhysicalLayer(frameToSend, failSomePackets);
         sendingFramework.startTimer(frameNum);
-        System.out.println("sending frame: " + frameToSend.toString());
     }
 
     void GoBackNSender() {
@@ -69,7 +68,7 @@ public class UnidirectionalGoBackN {
             }
 
             event = sendingFramework.waitForEvent();
-            System.out.println("got event: " + event);
+            // System.out.println("got event: " + event);
             switch (event) {
             case FRAME_ARRIVAL:
                 // this is the sender: Only frames that arrive will be
@@ -86,6 +85,8 @@ public class UnidirectionalGoBackN {
 
                 // getting n acknowledged implies that n-1, n-2, etc. are
                 // also received
+                // System.out.println("Got acknowledgment for frame #"
+                // + bufferFrame.getAcknowledgmentNumber());
                 while (expectedAcknowledgment <= bufferFrame
                         .getAcknowledgmentNumber()) {
                     sendingFramework.stopTimer(expectedAcknowledgment);
@@ -112,8 +113,9 @@ public class UnidirectionalGoBackN {
             // acknowledgments for those received frames. Does not track what
             // acknowledgments were received by the other party
             // receivingFramework.waitForEvent();
-            eventType event = receivingFramework.waitForEvent();
-            System.out.println("got event: " + event);
+            receivingFramework.waitForEvent();
+            // eventType event = receivingFramework.waitForEvent();
+            // System.out.println("got event: " + event);
             // only event possibility is frame_arrival. no timeouts are set (no
             // calls to startTimer())
             bufferFrame = receivingFramework.fromPhysicalLayer();
@@ -125,7 +127,10 @@ public class UnidirectionalGoBackN {
             while (bufferFrameList.size() > 0 && i < bufferFrameList.size()) {
                 if (bufferFrameList.get(i)
                         .getSequenceNumber() == expectedFrame) {
-                    receivingFramework.toNetworkLayer(bufferFrame.getPacket());
+                    receivingFramework
+                            .toNetworkLayer(bufferFrameList.get(i).getPacket());
+                    Frame outboundAck = new Frame(null, 0, expectedFrame, null);
+                    receivingFramework.toPhysicalLayer(outboundAck);
                     expectedFrame = receivingFramework.inc(expectedFrame);
                     bufferFrameList.remove(i);
                     i = 0;
