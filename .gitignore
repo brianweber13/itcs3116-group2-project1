@@ -3,7 +3,7 @@
 
 # bytecode
 target/
-App.jar
+#App.jar
 
 # files for mock layers
 physical-layer
