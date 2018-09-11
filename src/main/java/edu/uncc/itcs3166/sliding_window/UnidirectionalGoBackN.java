@@ -107,6 +107,8 @@ public class UnidirectionalGoBackN {
             }
             int i = 0;
             while (bufferFrameList.size() > 0 && i < bufferFrameList.size()) {
+                // if a frame gets lost, this will keep going forever... is that
+                // okay?
                 if (bufferFrameList.get(i)
                         .getSequenceNumber() == expectedFrame) {
                     receivingFramework
