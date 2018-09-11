@@ -32,8 +32,7 @@ public class App {
             case 's':
                 demoSimplexStopAndWait();
             case 'n':
-                // demoGoBackN();
-                demoSimplexStopAndWait();
+                demoGoBackN();
             default:
                 System.out
                         .println("Protocol not recognized. Enter the letter in "
