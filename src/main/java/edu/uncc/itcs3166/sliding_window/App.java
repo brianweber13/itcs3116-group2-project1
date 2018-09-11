@@ -48,27 +48,10 @@ public class App {
     }
 
     private static void demoGoBackN() {
-        // boolean gotInfo = false;
         boolean failPackets = false;
         int maxSequenceNumber = 5;
         int timeoutInMillis = 5000;
         UnidirectionalGoBackN p;
-
-        // while (!gotInfo) {
-        // System.out.println("Would you like some packets to fail? (y/n)");
-        // String input = scanner.nextLine();
-        // switch (Character.toLowerCase(input.charAt(0))) {
-        // case 'y':
-        // failPackets = true;
-        // gotInfo = true;
-        // break;
-        // case 'n':
-        // gotInfo = true;
-        // break;
-        // default:
-        // System.out.println("Please enter 'y' or 'n'");
-        // }
-        // }
 
         p = new UnidirectionalGoBackN(maxSequenceNumber, timeoutInMillis,
                 failPackets, scanner);
@@ -86,24 +69,6 @@ public class App {
                 System.out.println("Please enter 's' or 'r'");
             }
         }
-
-        // for bidirectional go-back-n: no longer used
-        // boolean failPackets = false;
-        // while (true) {
-        // System.out.println("Would you like some packets to fail? (y/n)");
-        // String input = scanner.nextLine();
-        // switch (Character.toLowerCase(input.charAt(0))) {
-        // case 'y':
-        // failPackets = true;
-        // break;
-        // case 'n':
-        // break;
-        // default:
-        // System.out.println("Please enter 'y' or 'n'");
-        // }
-        // GoBackNProtocol p = new GoBackNProtocol(scanner, failPackets);
-        // p.protocol5();
-        // }
     }
 
     private static boolean askIfVerboseMode() {

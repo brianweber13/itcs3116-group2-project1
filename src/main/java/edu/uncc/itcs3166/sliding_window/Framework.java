@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -265,14 +264,8 @@ public class Framework {
 
     void toPhysicalLayer(Frame frameToSend, boolean failMode) {
         if (failMode) {
-            Random rand = new Random();
-            int succeed = rand.nextInt(3);
-            if (succeed != 0) {
-                toPhysicalLayer(frameToSend);
-            } else {
-                System.out.println("The following frame was lost: "
-                        + frameToSend.toString());
-            }
+            // TODO: Implement a mode that fails some packets
+            toPhysicalLayer(frameToSend);
         } else {
             toPhysicalLayer(frameToSend);
         }
